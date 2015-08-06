@@ -2,28 +2,32 @@
 
 # Example of use #
 1. Get an api key from: https://amplitude.com
-2. 
+2. Create a service like such:
 
-		var app = angular.module('myapp', ['angular-amplitude']);
+```javascript
+app.service('Amplitude', function ($amplitude, $rootScope, amplitudeApiKey, $location) {
+  function init() {
+    $amplitude.init(amplitudeApiKey);
+    // if using angular-ui-router
+    $rootScope.$on('$locationChangeStart', function() {
+      logEvent('visited_app_page', {page: $location.$$path});
+    });
+  }
 
-       	app.service("TrackingsService", function TrackingsService($amplitude, rootScope){
-       		 return{
-		        init: init,
-		        logEvent: logEvent
-		    }
+  function identifyUser(userId, userProperties) {
+    $amplitude.setUserId(userId);
+    $amplitude.setUserProperties(userProperties);
+  }
 
-		    function init(){
-		        $amplitude.init(YOUR_API_KEY, null, { saveEvents: true })
-		        $amplitude.setVersionName(YOUR_APP_VERSION); //optional
+  function logEvent(eventName, params) {
+    $amplitude.logEvent(eventName, params);
+  }
 
-		       	//if you use angular-ui-router
-		        $rootScope.$on("$locationChangeStart", function(event, next, current) {
-		            logEvent('page_visit', $location.$$path);
-		        });
-		    }
+  return{
+    init: init,
+    logEvent: logEvent,
+    identifyUser: identifyUser
+  };
 
-		    function logEvent(event_name, params){
-		        $amplitude.logEvent(event_name, params);
-		    }
-       	})
-
+});
+```
